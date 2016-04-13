@@ -11,17 +11,22 @@ SoftwareSerial BTSerial(2, 4); // SoftwareSerial(RX, TX)
 
 //pin define
 const int green_led_pin   = 11;
-const int yellow_led_pin  = 12;
+const int orange_led_pin  = 12;
 const int red_led_pin     = 13;
 const int light_sensor_analog_pin  = A0;
 
 
 //Bluetooth command define
 typedef enum ColorType {
-  TypeNone  = 0,
-  TypeRed   = 1 << 0,
-  TypeGreen = 1 << 1,
-  TypeYello = 1 << 2,
+  ColorTypeNone            = 0,
+  ColorTypeRed             = 1 << 0,
+  ColorTypeGreen           = 1 << 1,
+  ColorTypeOrange          = 1 << 2,
+  ColorTypeRedAndGreen     = 1 << 3,
+  ColorTypeRedAndOrange    = 1 << 4,
+  ColorTypeGreenAndOrange  = 1 << 5,
+  ColorTypeOrangeAndGreen  = 1 << 6,
+  ColorTypeAll             = 1 << 7,
 };
 
 
@@ -36,7 +41,7 @@ void setup() {
   
   // initialize digital pin 13 as an output.
   pinMode(green_led_pin, OUTPUT);
-  pinMode(yellow_led_pin, OUTPUT);  
+  pinMode(orange_led_pin, OUTPUT);  
   pinMode(red_led_pin, OUTPUT);  
  
 }
@@ -49,9 +54,9 @@ void loop() {
 //  delay(500);            
 //  digitalWrite(green_led_pin, LOW);
 //  delay(500);           
-//  digitalWrite(yellow_led_pin, HIGH);
+//  digitalWrite(orange_led_pin, HIGH);
 //  delay(500);            
-//  digitalWrite(yellow_led_pin, LOW);
+//  digitalWrite(orange_led_pin, LOW);
 //  delay(500);           
 //  digitalWrite(red_led_pin, HIGH);
 //  delay(500);            
@@ -67,14 +72,49 @@ void loop() {
     int iphone_command = (int)data;
     Serial.println(iphone_command);
 
-    if(iphone_command & TypeRed)    digitalWrite(red_led_pin, HIGH);
-    else                            digitalWrite(red_led_pin, LOW);
+    if(iphone_command & ColorTypeRed) {
+      digitalWrite(red_led_pin, HIGH);
+      digitalWrite(green_led_pin, LOW);
+      digitalWrite(orange_led_pin, LOW);
 
-    if(iphone_command & TypeGreen)  digitalWrite(green_led_pin, HIGH);
-    else                            digitalWrite(green_led_pin, LOW);
+    }else if(iphone_command & ColorTypeGreen) {
+      digitalWrite(red_led_pin, LOW);
+      digitalWrite(green_led_pin, HIGH);
+      digitalWrite(orange_led_pin, LOW);
 
-    if(iphone_command & TypeYello)  digitalWrite(yellow_led_pin, HIGH);
-    else                            digitalWrite(yellow_led_pin, LOW);
+    }else if(iphone_command & ColorTypeOrange) {
+      digitalWrite(red_led_pin, LOW);
+      digitalWrite(green_led_pin, LOW);
+      digitalWrite(orange_led_pin, HIGH);
+
+    }else if(iphone_command & ColorTypeRedAndGreen) {
+      digitalWrite(red_led_pin, HIGH);
+      digitalWrite(green_led_pin, HIGH);
+      digitalWrite(orange_led_pin, LOW);
+
+    }else if(iphone_command & ColorTypeRedAndOrange) {
+      digitalWrite(red_led_pin, HIGH);
+      digitalWrite(green_led_pin, LOW);
+      digitalWrite(orange_led_pin, HIGH);
+
+    }else if(iphone_command & ColorTypeGreenAndOrange) {
+      digitalWrite(red_led_pin, LOW);
+      digitalWrite(green_led_pin, HIGH);
+      digitalWrite(orange_led_pin, HIGH);
+
+    }else if(iphone_command & ColorTypeOrangeAndGreen) {
+      digitalWrite(red_led_pin, LOW);
+      digitalWrite(green_led_pin, HIGH);
+      digitalWrite(orange_led_pin, HIGH);
+      
+    }else if(iphone_command & ColorTypeAll) {
+      digitalWrite(red_led_pin, HIGH);
+      digitalWrite(green_led_pin, HIGH);
+      digitalWrite(orange_led_pin, HIGH);
+    }else {
+        ledOff();
+    }
+
 /*
     //LED点滅
     digitalWrite(green_led_pin, HIGH);
@@ -99,11 +139,17 @@ void loop() {
 //    BTSerial.write(data); // write it to BT
 //    
 //    //LED点滅
-//    digitalWrite(yellow_led_pin, HIGH);
+//    digitalWrite(orange_led_pin, HIGH);
 //    delay(100);
-//    digitalWrite(yellow_led_pin, LOW);
+//    digitalWrite(orange_led_pin, LOW);
 //  }
 
   // wait.
   delay(100);
+}
+
+void ledOff() {
+  digitalWrite(green_led_pin, LOW);   
+  digitalWrite(green_led_pin, LOW); 
+  digitalWrite(orange_led_pin, LOW);
 }
