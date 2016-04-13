@@ -17,18 +17,13 @@ const int light_sensor_analog_pin  = A0;
 
 
 //Bluetooth command define
-typedef enum ColorType {
-  ColorTypeNone            = 0,
-  ColorTypeRed             = 1 << 0,
-  ColorTypeGreen           = 1 << 1,
-  ColorTypeOrange          = 1 << 2,
-  ColorTypeRedAndGreen     = 1 << 3,
-  ColorTypeRedAndOrange    = 1 << 4,
-  ColorTypeGreenAndOrange  = 1 << 5,
-  ColorTypeOrangeAndGreen  = 1 << 6,
-  ColorTypeAll             = 1 << 7,
+typedef enum CommandType {
+  TypeNone            = 0,
+  TypeRed             = 1 << 0,
+  TypeGreen           = 1 << 1,
+  TypeOrange          = 1 << 2,
+  TypeBlink           = 1 << 3,  
 };
-
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -63,64 +58,48 @@ void loop() {
 //  digitalWrite(red_led_pin, LOW);
 //  delay(500);
 
+  int red_onoff = LOW;
+  int green_onoff = LOW;
+  int orange_onoff = LOW;
+
+  bool blink_flag = false;
+
   //bluetooth
   while (BTSerial.available()) { // if BT sends something
     byte data = BTSerial.read();
     //Serial.write(data); // write it to serial(serial monitor)
-    Serial.println(data);
+    //Serial.println(data);
     
     int iphone_command = (int)data;
     Serial.println(iphone_command);
 
-    if(iphone_command & ColorTypeRed) {
-      digitalWrite(red_led_pin, HIGH);
-      digitalWrite(green_led_pin, LOW);
-      digitalWrite(orange_led_pin, LOW);
+    bool blink_flag = (iphone_command & TypeBlink);
+    
+    if (blink_flag) {
+      if (iphone_command & TypeRed) {
+          flashLed(red_led_pin);
+      }else {
+          ledOff(red_led_pin);
+      }
 
-    }else if(iphone_command & ColorTypeGreen) {
-      digitalWrite(red_led_pin, LOW);
-      digitalWrite(green_led_pin, HIGH);
-      digitalWrite(orange_led_pin, LOW);
+      if (iphone_command & TypeGreen) {
+          flashLed(green_led_pin);
+      }else {
+          ledOff(green_led_pin);
+      }
 
-    }else if(iphone_command & ColorTypeOrange) {
-      digitalWrite(red_led_pin, LOW);
-      digitalWrite(green_led_pin, LOW);
-      digitalWrite(orange_led_pin, HIGH);
+      if (iphone_command & TypeOrange) {
+          flashLed(orange_led_pin);
+      }else {
+          ledOff(orange_led_pin);
+      }
 
-    }else if(iphone_command & ColorTypeRedAndGreen) {
-      digitalWrite(red_led_pin, HIGH);
-      digitalWrite(green_led_pin, HIGH);
-      digitalWrite(orange_led_pin, LOW);
-
-    }else if(iphone_command & ColorTypeRedAndOrange) {
-      digitalWrite(red_led_pin, HIGH);
-      digitalWrite(green_led_pin, LOW);
-      digitalWrite(orange_led_pin, HIGH);
-
-    }else if(iphone_command & ColorTypeGreenAndOrange) {
-      digitalWrite(red_led_pin, LOW);
-      digitalWrite(green_led_pin, HIGH);
-      digitalWrite(orange_led_pin, HIGH);
-
-    }else if(iphone_command & ColorTypeOrangeAndGreen) {
-      digitalWrite(red_led_pin, LOW);
-      digitalWrite(green_led_pin, HIGH);
-      digitalWrite(orange_led_pin, HIGH);
-      
-    }else if(iphone_command & ColorTypeAll) {
-      digitalWrite(red_led_pin, HIGH);
-      digitalWrite(green_led_pin, HIGH);
-      digitalWrite(orange_led_pin, HIGH);
     }else {
-        ledOff();
+      digitalWrite(red_led_pin, (iphone_command & TypeRed)?HIGH:LOW);
+      digitalWrite(green_led_pin, (iphone_command & TypeGreen)?HIGH:LOW);
+      digitalWrite(orange_led_pin, (iphone_command & TypeOrange)?HIGH:LOW);
     }
 
-/*
-    //LED点滅
-    digitalWrite(green_led_pin, HIGH);
-    delay(100);
-    digitalWrite(green_led_pin, LOW);
-*/    
   }
 
   //Ligit sensor
@@ -148,8 +127,22 @@ void loop() {
   delay(100);
 }
 
-void ledOff() {
-  digitalWrite(green_led_pin, LOW);   
-  digitalWrite(green_led_pin, LOW); 
-  digitalWrite(orange_led_pin, LOW);
+void ledOnOff(bool on) {
+
+  int flag = on?255:0;
+
+  digitalWrite(green_led_pin, flag);   
+  digitalWrite(green_led_pin, flag); 
+  digitalWrite(orange_led_pin, flag);
+}
+
+void ledOff(int pin_no) {
+  digitalWrite(pin_no, LOW);
+}
+
+void flashLed(int pin_no) {
+
+  digitalWrite(pin_no, HIGH);
+  delay(500);
+  digitalWrite(pin_no, LOW);
 }
