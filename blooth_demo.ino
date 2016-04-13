@@ -15,6 +15,8 @@ const int orange_led_pin  = 12;
 const int red_led_pin     = 13;
 const int light_sensor_analog_pin  = A0;
 
+#define LED_ON  255
+#define LED_OFF 0
 
 //Bluetooth command define
 typedef enum CommandType {
@@ -24,6 +26,13 @@ typedef enum CommandType {
   TypeOrange          = 1 << 2,
   TypeBlink           = 1 << 3,  
 };
+
+//
+int red_onoff = LOW;
+int green_onoff = LOW;
+int orange_onoff = LOW;
+
+bool blink_flag = false;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -58,11 +67,7 @@ void loop() {
 //  digitalWrite(red_led_pin, LOW);
 //  delay(500);
 
-  int red_onoff = LOW;
-  int green_onoff = LOW;
-  int orange_onoff = LOW;
-
-  bool blink_flag = false;
+  int iphone_command;
 
   //bluetooth
   while (BTSerial.available()) { // if BT sends something
@@ -70,41 +75,45 @@ void loop() {
     //Serial.write(data); // write it to serial(serial monitor)
     //Serial.println(data);
     
-    int iphone_command = (int)data;
+    iphone_command = (int)data;
     Serial.println(iphone_command);
 
-    bool blink_flag = (iphone_command & TypeBlink);
-    
-    if (blink_flag) {
-      if (iphone_command & TypeRed) {
+    blink_flag = (iphone_command & TypeBlink);
+
+    red_onoff     = (iphone_command & TypeRed)    ?HIGH:LOW;
+    green_onoff   = (iphone_command & TypeGreen)  ?HIGH:LOW;
+    orange_onoff  = (iphone_command & TypeOrange) ?HIGH:LOW;
+  }
+
+
+  if (blink_flag) {
+      if (red_onoff) {
           flashLed(red_led_pin);
       }else {
           ledOff(red_led_pin);
       }
 
-      if (iphone_command & TypeGreen) {
+      if (green_onoff) {
           flashLed(green_led_pin);
       }else {
           ledOff(green_led_pin);
       }
 
-      if (iphone_command & TypeOrange) {
+      if (orange_onoff) {
           flashLed(orange_led_pin);
       }else {
           ledOff(orange_led_pin);
       }
 
     }else {
-      digitalWrite(red_led_pin, (iphone_command & TypeRed)?HIGH:LOW);
-      digitalWrite(green_led_pin, (iphone_command & TypeGreen)?HIGH:LOW);
-      digitalWrite(orange_led_pin, (iphone_command & TypeOrange)?HIGH:LOW);
+      digitalWrite(red_led_pin, red_onoff);
+      digitalWrite(green_led_pin, green_onoff);
+      digitalWrite(orange_led_pin, orange_onoff);
     }
-
-  }
 
   //Ligit sensor
   int brightness = analogRead(light_sensor_analog_pin);
-  int intensity = map(brightness, 0,1023,255,0);  //0-1023 -> 255-0
+  int intensity = map(brightness, 0,1023,LED_ON,LED_OFF);  //0-1023 -> 255-0
 //  Serial.println(intensity);
   
 //  //red led brightness update
@@ -129,7 +138,7 @@ void loop() {
 
 void ledOnOff(bool on) {
 
-  int flag = on?255:0;
+  int flag = on?LED_ON:LED_OFF;
 
   digitalWrite(green_led_pin, flag);   
   digitalWrite(green_led_pin, flag); 
@@ -141,8 +150,8 @@ void ledOff(int pin_no) {
 }
 
 void flashLed(int pin_no) {
-
-  digitalWrite(pin_no, HIGH);
-  delay(500);
-  digitalWrite(pin_no, LOW);
+  
+  //反転する
+  int onoff_status = digitalRead(pin_no)==LED_OFF?LED_ON:LED_OFF;
+  digitalWrite(pin_no, onoff_status);
 }
