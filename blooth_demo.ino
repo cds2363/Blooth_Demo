@@ -17,16 +17,12 @@ const int light_sensor_analog_pin  = A0;
 
 
 //Bluetooth command define
-/*
- * typedef NS_OPTIONS(NSInteger, ColorType) {
- TypeNone = 0,
- TypeRed  = 1 << 0,
- TypeGreen = 1 << 1,
- TypeYello = 1 << 2,
+typedef enum ColorType {
+  TypeNone  = 0,
+  TypeRed   = 1 << 0,
+  TypeGreen = 1 << 1,
+  TypeYello = 1 << 2,
 };
- */
-
-
 
 
 // the setup function runs once when you press reset or power the board
@@ -71,24 +67,14 @@ void loop() {
     int iphone_command = (int)data;
     Serial.println(iphone_command);
 
-    if(iphone_command == 1) {
-      digitalWrite(green_led_pin, LOW);
-      digitalWrite(yellow_led_pin, LOW);
-      digitalWrite(red_led_pin, HIGH);
-    }else if(iphone_command == 2) {
-      digitalWrite(green_led_pin, HIGH);
-      digitalWrite(yellow_led_pin, LOW);
-      digitalWrite(red_led_pin, LOW);
-    }else if(iphone_command == 4) {
-      digitalWrite(green_led_pin, LOW);
-      digitalWrite(yellow_led_pin, HIGH);
-      digitalWrite(red_led_pin, LOW);
-    }else {
-      digitalWrite(green_led_pin, LOW);
-      digitalWrite(yellow_led_pin, LOW);
-      digitalWrite(red_led_pin, LOW);
-    }
-    
+    if(iphone_command & TypeRed)    digitalWrite(red_led_pin, HIGH);
+    else                            digitalWrite(red_led_pin, LOW);
+
+    if(iphone_command & TypeGreen)  digitalWrite(green_led_pin, HIGH);
+    else                            digitalWrite(green_led_pin, LOW);
+
+    if(iphone_command & TypeYello)  digitalWrite(yellow_led_pin, HIGH);
+    else                            digitalWrite(yellow_led_pin, LOW);
 /*
     //LED点滅
     digitalWrite(green_led_pin, HIGH);
