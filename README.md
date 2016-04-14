@@ -1,2 +1,2 @@
-# Blooth_Demo
-KJCodeプレゼンサンプル
+# bluetooth_demo
+KJCodeプレゼンデモサンプル（２）
